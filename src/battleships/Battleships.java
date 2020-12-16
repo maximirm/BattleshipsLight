@@ -1,0 +1,32 @@
+package battleships;
+
+import exceptions.GameException;
+import exceptions.StatusException;
+
+public interface Battleships {
+
+    /**
+     * place a ship on the board
+     * @param pR     PlayerRole
+     * @param xCoord xCoord
+     * @param yCoord yCoord
+     * @return SetResult
+     * @throws StatusException      if method is called in wrong GameStatus
+     * @throws GameException        if player placed all ships already
+     * @throws NullPointerException if coordinates out of bounds
+     */
+    boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException;
+
+    /**
+     * attack a ship on the board
+     * @param pR     PlayerRole
+     * @param xCoord xCoord
+     * @param yCoord yCoord
+     * @return AttackResult
+     * @throws StatusException      if method is called in wrong GameStatus
+     * @throws GameException        if wrong player wants to attack
+     * @throws NullPointerException if coordinates out of bounds
+     */
+    boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException;
+
+}
