@@ -19,10 +19,10 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     private static final String ALREADY_ATTACKED = "you already attacked there";
     private static final String GAME_SESSION_ESTABLISHED = "game session established with: ";
 
-    private static Status status;
-    private static final int[] playerHealth = {0, 0};
-    private static boolean firstDonePlacing;
-    private static boolean secondDonePlacing;
+    private Status status = Status.SET;
+    private int[] playerHealth = {0, 0};
+    private boolean firstDonePlacing;
+    private boolean secondDonePlacing;
     private final String localPlayerName;
     public boolean firstPlayerDead;
     public boolean secondPlayerDead;
@@ -36,13 +36,14 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     @Override
     public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
 
+
         //check player
         int player = (pR == PlayerRole.FIRST) ? 0 : 1;
         //local
         if (pR == localRole) {
 
             //check status
-            if (status != Status.SET) {
+            if (this.status != Status.SET) {
                 throw new StatusException(WRONG_GAME_STATUS);
             }
             //check shipCounter
@@ -62,12 +63,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             playerHealth[player]++;
 
             //check shipCounter for status change
-            if (playerHealth[player] == 3) {
-                switch (pR) {
-                    case FIRST -> firstDonePlacing = true;
-                    case SECOND -> secondDonePlacing = true;
-                }
-            }
+
 
             this.protocolEngine.setShip(pR, xCoord, yCoord);
         }
@@ -75,12 +71,20 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
         else {
             //place ship
             this.board[player][xCoord][yCoord].setShip(true);
+            this.playerHealth[player]++;
 
         }
-
-        if (firstDonePlacing && secondDonePlacing) {
-            status = Status.ATTACK_FIRST;
+        if (playerHealth[player] == 3) {
+            switch (pR) {
+                case FIRST -> this.firstDonePlacing = true;
+                case SECOND -> this.secondDonePlacing = true;
+            }
         }
+        if (firstDonePlacing && secondDonePlacing){
+            this.status = Status.ATTACK_FIRST;
+        }
+
+
 
 
         return true;
@@ -88,7 +92,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
     private void notifyBoardChanged() {
 
-        if(this.boardChangeListenerList == null || this.boardChangeListenerList.isEmpty()) return;
+        if(this.boardChangeListenerList.isEmpty()) return;
 
         (new Thread(new Runnable() {
             @Override
@@ -156,6 +160,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
         } else {
             this.board[player][xCoord][yCoord].setAttacked(true);
+            changeStatus();
 
         }
 

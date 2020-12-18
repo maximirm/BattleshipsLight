@@ -20,9 +20,32 @@ public class BattleshipsPrintStreamView implements PrintStreamView{
     @Override
     public void print(PrintStream pS) throws IOException {
 
+        int enemy = localRole == PlayerRole.FIRST ? 1 : 0;
+        pS.print("\n");
+        pS.println("Enemy Board: ");
+        pS.println("__________");
+        pS.println("   0  1  2");
 
+        for (int i = 0; i < 3; i++) {
+            pS.print(i + " ");
+            for (int j = 0; j < 3; j++) {
+                boolean ship = this.board[enemy][j][i].isShip();
+                boolean attacked = this.board[enemy][j][i].isAttacked();
+                if (!attacked) {
+                    pS.print(" - ");
+                } else if (ship){
+                    pS.print(" X ");
+                } else {
+                    pS.print(" O ");
+                }
+            }
+            pS.print("\n");
+        }
+        pS.println("__________");
+        pS.print("\n");
         int player = localRole == PlayerRole.FIRST ? 0 : 1;
-
+        pS.println("My Board: ");
+        pS.println("__________");
         pS.println("   0  1  2");
 
         for (int i = 0; i < 3; i++) {
@@ -37,6 +60,14 @@ public class BattleshipsPrintStreamView implements PrintStreamView{
             }
         pS.print("\n");
         }
+        pS.println("__________");
+
+
+
+
+
     }
+
+
 
 }

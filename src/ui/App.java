@@ -3,6 +3,9 @@
  */
 package ui;
 
+import battleships.Status;
+
+import java.io.IOException;
 import java.util.LinkedList;
 
 public class App {
@@ -14,26 +17,34 @@ public class App {
 
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         System.out.println(WELCOME);
         String playerName = Console.readString(ENTER_NAME);
         BattleshipsUI userInterface = new BattleshipsUI(playerName);
 
         LinkedList<Command> networkList = userInterface.returnNetworkList();
-        LinkedList<Command> commandList = userInterface.returnCommandList();
+        LinkedList<Command> setList = userInterface.returnSetList();
+        LinkedList<Command> attackList = userInterface.returnAttackList();
         System.out.println(buildCommandMenu(networkList));
         System.out.println(selectCommand(networkList).execute());
         boolean connected = false;
+
         do {
             if(userInterface.gameStarted()){
                 connected = true;
             }
         } while (!connected);
+        userInterface.doPrint();
 
         do {
-            System.out.println(buildCommandMenu(commandList));
-            System.out.println(selectCommand(commandList).execute());
+            System.out.println(buildCommandMenu(setList));
+            System.out.println(selectCommand(setList).execute());
+        } while (userInterface.getStatus()== Status.SET);
+        do {
+            System.out.println(buildCommandMenu(attackList));
+            System.out.println(selectCommand(attackList).execute());
         } while (true);
+
     }
 
     private static String buildCommandMenu(LinkedList<Command> commands) {
