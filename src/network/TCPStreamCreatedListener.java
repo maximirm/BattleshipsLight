@@ -1,5 +1,5 @@
 package network;
 
 public interface TCPStreamCreatedListener {
-    void streamCreated(TCPStream channel);
+    void streamCreated(TCPStream stream);
 }

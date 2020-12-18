@@ -3,6 +3,8 @@ package battleships;
 import exceptions.GameException;
 import exceptions.StatusException;
 import network.GameSessionEstablishedListener;
+import view.BattleshipsPrintStreamView;
+import view.PrintStreamView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,8 +82,25 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             status = Status.ATTACK_FIRST;
         }
 
-        ////TODO boardchange
+        this.notifyBoardChanged();
         return true;
+    }
+
+    private void notifyBoardChanged() {
+
+        if(this.boardChangeListenerList == null || this.boardChangeListenerList.isEmpty()) return;
+
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                for(LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList){
+                    listener.changed();
+                }
+
+            }
+        })).start();
+
     }
 
 
@@ -240,5 +259,9 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
         this.localPlayerName = localPlayerName;
 
+    }
+
+    public PrintStreamView getPrintStreamView(){
+        return new BattleshipsPrintStreamView(this.board, localRole);
     }
 }
