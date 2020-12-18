@@ -12,11 +12,10 @@ public interface Battleships {
      * @param pR     PlayerRole
      * @param xCoord xCoord
      * @param yCoord yCoord
-     * @return SetResult
      * @throws StatusException if method is called in wrong GameStatus
      * @throws GameException   if player placed all ships already
      */
-    boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException;
+    void setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException;
 
     /**
      * attack a ship on the board

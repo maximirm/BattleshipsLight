@@ -3,7 +3,6 @@ package view;
 import battleships.PlayerRole;
 import battleships.Tile;
 
-import java.io.IOException;
 import java.io.PrintStream;
 
 public class BattleshipsPrintStreamView implements PrintStreamView {
@@ -18,7 +17,7 @@ public class BattleshipsPrintStreamView implements PrintStreamView {
     }
 
     @Override
-    public void printOwnBoard(PrintStream pS) throws IOException {
+    public void printOwnBoard(PrintStream pS) {
 
         int player = localRole == PlayerRole.FIRST ? 0 : 1;
         pS.print("\n");
@@ -35,7 +34,7 @@ public class BattleshipsPrintStreamView implements PrintStreamView {
                 boolean attacked = this.board[player][j][i].isAttacked();
                 if (attacked) {
                     pS.print(" O ");
-                } else if (!ship){
+                } else if (!ship) {
                     pS.print(" - ");
                 } else {
                     pS.print(" X ");
@@ -49,7 +48,7 @@ public class BattleshipsPrintStreamView implements PrintStreamView {
     }
 
     @Override
-    public void printEnemyBoard(PrintStream pS) throws IOException {
+    public void printEnemyBoard(PrintStream pS) {
 
         int enemy = localRole == PlayerRole.FIRST ? 1 : 0;
         pS.print("\n");

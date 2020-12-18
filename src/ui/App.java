@@ -14,12 +14,12 @@ public class App {
     public static final String ENTER_NAME = "Enter your name: ";
     public static final String SELECT_AN_OPTION = "Select an option: ";
     public static final String INVALID_OPTION = "Select a valid option between 0 and ";
+    public static final String GOOD_BYE = "see you next time ";
 
 
     public static void main(String[] args) throws IOException {
 
         System.out.println(WELCOME);
-
 
         BattleshipsUI userInterface = new BattleshipsUI(Console.readString(ENTER_NAME));
 
@@ -45,7 +45,9 @@ public class App {
         do {
             System.out.println(buildCommandMenu(attackList));
             System.out.println(selectCommand(attackList).execute());
-        } while (true);
+        } while (userInterface.getStatus() == Status.ATTACK_FIRST || userInterface.getStatus() == Status.ATTACK_SECOND);
+        System.out.println(GOOD_BYE);
+        System.exit(0);
 
     }
 

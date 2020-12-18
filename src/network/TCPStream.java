@@ -11,15 +11,13 @@ import java.net.Socket;
  */
 public class TCPStream extends Thread {
 
+    public final int WAIT_LOOP_IN_MILLIS = 1000; // 30 sec
     private final int port;
     private final boolean asServer;
     private final String name;
     private TCPStreamCreatedListener listener = null;
     private Socket socket = null;
-
     private boolean fatalError = false;
-
-    public final int WAIT_LOOP_IN_MILLIS = 1000; // 30 sec
     private Thread createThread = null;
     private TCPServer tcpServer = null;
     private TCPClient tcpClient = null;

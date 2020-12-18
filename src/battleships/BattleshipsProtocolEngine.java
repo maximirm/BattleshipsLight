@@ -20,29 +20,18 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
 
     private static final String SERIALIZE_FAIL = "couldn't serialize command ";
     private static final String DESERIALIZE_FAIL = "couldn't deserialize command ";
-    private static final String DEFAULT_NAME = "testName ";
     private static final String UNKNOWN_METHOD_ID = "unknown method id ";
     private static final String CONNECTION_LOSS = "IOException caught - most probably connection close - stop thread / stop engine ";
     private static final String UNKNOWN_ROLE = "unknown role";
 
     private final List<GameSessionEstablishedListener> sessionCreatedListenerList = new ArrayList<>();
     private final Battleships gameEngine;
+    private final String name;
     private OutputStream os;
     private InputStream is;
     private boolean oracle;
     private String partnerName;
 
-    private Thread protocolThread = null;
-    private String name;
-
-
-    public BattleshipsProtocolEngine(InputStream is, OutputStream os, Battleships gameEngine) {
-
-        this.gameEngine = gameEngine;
-        this.is = is;
-        this.os = os;
-
-    }
 
     public BattleshipsProtocolEngine(Battleships gameEngine, String name) {
 
@@ -51,11 +40,11 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
     }
 
     @Override
-    public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws GameException, NullPointerException {
+    public void setShip(PlayerRole pR, int xCoord, int yCoord) throws GameException, NullPointerException {
 
         DataOutputStream dos = new DataOutputStream(this.os);
         serialize(pR, xCoord, yCoord, METHOD_ID_SET, dos);
-        return false;
+
     }
 
     @Override
@@ -71,7 +60,7 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
 
         long seed = this.hashCode() * System.currentTimeMillis();
         Random random = new Random(seed);
-        int localInt = 0, remoteInt = 0;
+        int localInt, remoteInt;
 
         try {
             DataOutputStream dos = new DataOutputStream(this.os);
@@ -88,21 +77,17 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
             e.printStackTrace();
         }
 
-        if (this.sessionCreatedListenerList != null && !this.sessionCreatedListenerList.isEmpty()) {
+        if (!this.sessionCreatedListenerList.isEmpty()) {
             for (GameSessionEstablishedListener ocListener : this.sessionCreatedListenerList) {
-                new Thread(new Runnable() {
+                new Thread(() -> {
 
-                    @Override
-                    public void run() {
-
-                        try {
-                            Thread.sleep(1);
-                        } catch (InterruptedException e) {
-                            //won't happen
-                        }
-                        ocListener.gameSessionEstablished(BattleshipsProtocolEngine.this.oracle,
-                                BattleshipsProtocolEngine.this.partnerName);
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        //won't happen
                     }
+                    ocListener.gameSessionEstablished(BattleshipsProtocolEngine.this.oracle,
+                            BattleshipsProtocolEngine.this.partnerName);
                 }).start();
             }
         }
@@ -124,8 +109,8 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
 
         this.is = is;
         this.os = os;
-        this.protocolThread = new Thread(this);
-        this.protocolThread.start();
+        Thread protocolThread = new Thread(this);
+        protocolThread.start();
 
     }
 
@@ -163,7 +148,7 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
 
     private void deserialize(int methodID, DataInputStream dis) throws GameException {
 
-        PlayerRole pR = null;
+        PlayerRole pR;
         try {
             //read Role
             switch (dis.readInt()) {

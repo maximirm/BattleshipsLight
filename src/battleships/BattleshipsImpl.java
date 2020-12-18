@@ -35,7 +35,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     }
 
     @Override
-    public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
+    public void setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
 
         //check player
         int player = (pR == PlayerRole.FIRST) ? 0 : 1;
@@ -84,7 +84,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             this.notifyBoardChanged();
         }
 
-        return true;
     }
 
     @Override
@@ -180,11 +179,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
                         (status == Status.END && this.localRole == PlayerRole.SECOND && firstPlayerDead));
     }
 
-    @Override
-    public boolean hasLost() {
-
-        return !this.hasWon();
-    }
 
     @Override
     public boolean placementDone() {
@@ -252,20 +246,17 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
         if (this.boardChangeListenerList.isEmpty()) return;
 
-        (new Thread(new Runnable() {
-            @Override
-            public void run() {
+        (new Thread(() -> {
 
-                for (LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    listener.changed();
+            for (LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-
+                listener.changed();
             }
+
         })).start();
 
     }

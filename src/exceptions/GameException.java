@@ -14,6 +14,7 @@ public class GameException extends Exception {
     public GameException(String message, Throwable t) {
 
         super(message, t);
+
     }
 
 }

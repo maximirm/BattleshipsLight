@@ -35,8 +35,8 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     private static final String HIT = "great - you hit something";
     private static final String MISS = "too bad - u missed";
     private final BattleshipsImpl gameEngine;
-    BattleShipsLocalBoard localBoard;
     private final String playerName;
+    BattleShipsLocalBoard localBoard;
     private TCPStream tcpStream;
     private BattleshipsProtocolEngine protocolEngine;
 
@@ -76,6 +76,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     }
 
     private Command createOwnBoardCommand() {
+
         return new Command() {
             @Override
             public String execute() {
@@ -143,7 +144,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             public String execute() {
 
                 try {
-                    if(localBoard.placementDone()){
+                    if (localBoard.placementDone()) {
                         return PLACEMENT_DONE;
                     }
                     doSet();
@@ -169,16 +170,15 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             @Override
             public String execute() {
 
-
                 try {
-                    if(!localBoard.isActive()){
+                    if (!localBoard.isActive()) {
                         return WAIT_FOR_OTHER_PLAYER;
                     }
                     boolean result = doAttack();
                     printEnemyBoard();
-                    if (result){
+                    if (result) {
                         return HIT;
-                    }else{
+                    } else {
                         return MISS;
                     }
                 } catch (StatusException | GameException | IOException e) {
@@ -222,7 +222,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
     @Override
     public void changed() {
-//TODO
+
         try {
             this.doPrint();
         } catch (IOException e) {
@@ -255,8 +255,6 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
     public void doPrint() throws IOException {
 
-
-
         if (this.gameEngine.getStatus() == Status.END) {
             if (this.gameEngine.hasWon()) {
                 System.out.println(YOU_WON);
@@ -273,15 +271,12 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
         this.gameEngine.getPrintStreamView().printOwnBoard(System.out);
 
     }
+
     public void printEnemyBoard() throws IOException {
 
         this.gameEngine.getPrintStreamView().printEnemyBoard(System.out);
 
     }
-
-
-
-
 
 
     @Override
@@ -338,6 +333,5 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
         return this.localBoard.getStatus();
     }
-
 
 }

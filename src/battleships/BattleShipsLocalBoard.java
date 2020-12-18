@@ -23,10 +23,6 @@ public interface BattleShipsLocalBoard extends Battleships {
      */
     boolean hasWon();
 
-    /**
-     * @return true if lost
-     */
-    boolean hasLost();
 
     /**
      * @return true if local player is done with placement
