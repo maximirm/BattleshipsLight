@@ -18,24 +18,28 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     private static final String NOT_YOUR_TURN = "its not your turn - please wait";
     private static final String ALREADY_ATTACKED = "you already attacked there";
     private static final String GAME_SESSION_ESTABLISHED = "game session established with: ";
-
-    private Status status = Status.SET;
-    private int[] playerHealth = {0, 0};
-    private boolean firstDonePlacing;
-    private boolean secondDonePlacing;
     private final String localPlayerName;
+    private final List<LocalBoardChangeListener> boardChangeListenerList = new ArrayList<>();
     public boolean firstPlayerDead;
     public boolean secondPlayerDead;
     Tile[][][] board = buildBoard();
+    private Status status = Status.SET;
+    private final int[] playerHealth = {0, 0};
+    private boolean firstDonePlacing;
+    private boolean secondDonePlacing;
     private PlayerRole localRole;
     private PlayerRole remoteRole;
     private String remotePlayerName;
-    private final List<LocalBoardChangeListener> boardChangeListenerList = new ArrayList<>();
     private BattleshipsProtocolEngine protocolEngine;
+
+    public BattleshipsImpl(String localPlayerName) {
+
+        this.localPlayerName = localPlayerName;
+
+    }
 
     @Override
     public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
-
 
         //check player
         int player = (pR == PlayerRole.FIRST) ? 0 : 1;
@@ -64,7 +68,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
             //check shipCounter for status change
 
-
             this.protocolEngine.setShip(pR, xCoord, yCoord);
         }
         //remote
@@ -80,25 +83,22 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
                 case SECOND -> this.secondDonePlacing = true;
             }
         }
-        if (firstDonePlacing && secondDonePlacing){
+        if (firstDonePlacing && secondDonePlacing) {
             this.status = Status.ATTACK_FIRST;
         }
-
-
-
 
         return true;
     }
 
     private void notifyBoardChanged() {
 
-        if(this.boardChangeListenerList.isEmpty()) return;
+        if (this.boardChangeListenerList.isEmpty()) return;
 
         (new Thread(new Runnable() {
             @Override
             public void run() {
 
-                for(LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList){
+                for (LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList) {
                     listener.changed();
                 }
 
@@ -107,13 +107,13 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
     }
 
-
     @Override
     public boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
 
         int defendingPlayer = (pR == PlayerRole.FIRST) ? 1 : 0;
 
         if (pR == localRole) {
+
             //check status
             if (status != Status.ATTACK_FIRST && status != Status.ATTACK_SECOND) {
                 throw new StatusException(WRONG_GAME_STATUS);
@@ -128,44 +128,37 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             if (this.board[defendingPlayer][xCoord][yCoord].isAttacked()) {
                 throw new GameException(ALREADY_ATTACKED);
             }
-            //check ship
-            if (this.board[defendingPlayer][xCoord][yCoord].isShip()) {
-                this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
-                playerHealth[defendingPlayer]--;
-            } else {
-                //no ship
-                this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
-                changeStatus();
-                this.notifyBoardChanged();
-                this.protocolEngine.attack(pR, xCoord, yCoord);
-                return false;
-            }
-
-            //check HP
-            if (playerHealth[defendingPlayer] == 0) {
-                switch (pR) {
-                    case FIRST -> {
-                        secondPlayerDead = true;
-                        status = Status.END;
-                    }
-                    case SECOND -> {
-                        firstPlayerDead = true;
-                        status = Status.END;
-                    }
-                }
-            }
-            this.protocolEngine.attack(pR, xCoord, yCoord);
-
-            changeStatus();
-            this.notifyBoardChanged();
-
-        } else {
+        }
+        if (!this.board[defendingPlayer][xCoord][yCoord].isShip()) {
+            //no ship
             this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
             changeStatus();
             this.notifyBoardChanged();
-
+            if(pR == localRole){
+                this.protocolEngine.attack(pR, xCoord, yCoord);
+            }
+            return false;
         }
 
+        this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
+        playerHealth[defendingPlayer]--;
+        if (playerHealth[defendingPlayer] == 0) {
+            switch (pR) {
+                case FIRST -> {
+                    secondPlayerDead = true;
+                    status = Status.END;
+                }
+                case SECOND -> {
+                    firstPlayerDead = true;
+                    status = Status.END;
+                }
+            }
+        }
+        if(pR == localRole){
+            this.protocolEngine.attack(pR, xCoord, yCoord);
+        }
+        changeStatus();
+        this.notifyBoardChanged();
 
         return true;
 
@@ -268,15 +261,9 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
         this.protocolEngine.subscribeGameSessionEstablishedListener(this);
     }
 
-    public BattleshipsImpl(String localPlayerName) {
+    public PrintStreamView getPrintStreamView() {
 
-        this.localPlayerName = localPlayerName;
-
-    }
-
-    public PrintStreamView getPrintStreamView(){
         return new BattleshipsPrintStreamView(this.board, localRole);
     }
-
 
 }

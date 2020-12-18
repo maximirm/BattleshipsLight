@@ -143,10 +143,12 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             public String execute() {
 
                 try {
+                    if(!localBoard.isActive()){
+                        return WAIT_FOR_OTHER_PLAYER;
+                    }
                     doAttack();
                 } catch (StatusException | GameException e) {
                     System.out.println(e.getLocalizedMessage());
-
                 }
                 return "\n";
             }
@@ -157,7 +159,6 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
                 return ATTACK_COMMAND;
             }
         };
-
     }
 
     private Command createExitCommand() {
