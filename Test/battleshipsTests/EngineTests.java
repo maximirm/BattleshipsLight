@@ -109,7 +109,6 @@ public class EngineTests {
         //                                         scenario                                                       //
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        System.out.println(aliceGameEngine.isActive());
         BattleShipsLocalBoard playerFirst = aliceGameEngine.isActive() ? aliceGameEngine : bobGameEngine;
         BattleShipsLocalBoard playerSecond = aliceGameEngine.isActive() ? bobGameEngine : aliceGameEngine;
         PlayerRole alice = playerFirst.getLocalRole();
@@ -120,10 +119,6 @@ public class EngineTests {
         playerSecond.setShip(bob, 0, 0);
         playerSecond.setShip(bob, 0, 1);
         playerSecond.setShip(bob, 0, 2);
-        System.out.println(playerFirst.getStatus());
-        System.out.println(playerSecond.getStatus());
-        System.out.println(playerFirst.getStatus());
-        System.out.println(playerSecond.getStatus());
 
         if(alice == PlayerRole.FIRST){
             playerFirst.attack(alice, 0, 0);
@@ -132,11 +127,8 @@ public class EngineTests {
             playerSecond.attack(bob, 0, 1);
             playerFirst.attack(alice, 0, 2);
 
-            System.out.println(playerFirst.getStatus());
-            System.out.println(playerSecond.getStatus());
-            System.out.println(playerFirst.hasWon());
-            System.out.println(playerSecond.hasWon());
-//            Assert.assertTrue(playerFirst.hasWon());
+            Assert.assertTrue(playerFirst.hasWon());
+            System.out.println("first won");
 
         } else if (alice == PlayerRole.SECOND){
             playerSecond.attack(bob, 0, 0);
@@ -145,11 +137,8 @@ public class EngineTests {
             playerFirst.attack(alice, 0, 1);
             playerSecond.attack(bob, 0, 2);
 
-            System.out.println(playerFirst.getStatus());
-            System.out.println(playerSecond.getStatus());
-            System.out.println(playerFirst.hasWon());
-            System.out.println(playerSecond.hasWon());
-//            Assert.assertTrue(playerSecond.hasLost());
+            Assert.assertTrue(playerSecond.hasWon());
+            System.out.println("second won");
         } else System.out.println("fail");
 
 
