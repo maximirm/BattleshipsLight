@@ -31,12 +31,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     private final List<LocalBoardChangeListener> boardChangeListenerList = new ArrayList<>();
     private BattleshipsProtocolEngine protocolEngine;
 
-    public BattleshipsImpl(String localPlayerName) {
-
-        this.localPlayerName = localPlayerName;
-
-    }
-
     @Override
     public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException {
 
@@ -151,41 +145,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
     }
 
-    private void changeStatus() {
-
-        switch (status) {
-            case ATTACK_FIRST -> status = Status.ATTACK_SECOND;
-            case ATTACK_SECOND -> status = Status.ATTACK_FIRST;
-        }
-
-    }
-
-    private Tile[][][] buildBoard() {
-
-        Tile[][][] board = new Tile[2][3][3];
-        for (int i = 0; i < 2; i++) {
-            for (int j = 0; j < 3; j++) {
-                for (int k = 0; k < 3; k++) {
-                    board[i][j][k] = new Tile();
-                }
-            }
-        }
-        return board;
-    }
-
-    private void checkCoords(int xCoord, int yCoord) {
-
-        if (xCoord >= this.board[0].length || yCoord >= this.board[0].length)
-            throw new NullPointerException(COORDS_OUTSIDE);
-
-    }
-
-    public void setProtocolEngine(BattleshipsProtocolEngine protocolEngine) {
-
-        this.protocolEngine = protocolEngine;
-        this.protocolEngine.subscribeGameSessionEstablishedListener(this);
-    }
-
     @Override
     public PlayerRole getLocalRole() {
 
@@ -239,6 +198,47 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
         this.remoteRole = this.localRole == PlayerRole.FIRST ? PlayerRole.SECOND : PlayerRole.FIRST;
         this.remotePlayerName = partnerName;
         status = Status.SET;
+
+    }
+
+    private void changeStatus() {
+
+        switch (status) {
+            case ATTACK_FIRST -> status = Status.ATTACK_SECOND;
+            case ATTACK_SECOND -> status = Status.ATTACK_FIRST;
+        }
+
+    }
+
+    private Tile[][][] buildBoard() {
+
+        Tile[][][] board = new Tile[2][3][3];
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 3; j++) {
+                for (int k = 0; k < 3; k++) {
+                    board[i][j][k] = new Tile();
+                }
+            }
+        }
+        return board;
+    }
+
+    private void checkCoords(int xCoord, int yCoord) {
+
+        if (xCoord >= this.board[0].length || yCoord >= this.board[0].length)
+            throw new NullPointerException(COORDS_OUTSIDE);
+
+    }
+
+    public void setProtocolEngine(BattleshipsProtocolEngine protocolEngine) {
+
+        this.protocolEngine = protocolEngine;
+        this.protocolEngine.subscribeGameSessionEstablishedListener(this);
+    }
+
+    public BattleshipsImpl(String localPlayerName) {
+
+        this.localPlayerName = localPlayerName;
 
     }
 }
