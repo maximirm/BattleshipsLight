@@ -15,25 +15,20 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     private static final String PLACED_ALL_SHIPS = "u placed all your ships already - please wait for second player";
     private static final String NOT_YOUR_TURN = "its not your turn - please wait";
     private static final String ALREADY_ATTACKED = "you already attacked there";
-    private static final String GAME_SESSION_ESTABLISHED = " game session established " ;
+    private static final String GAME_SESSION_ESTABLISHED = " game session established ";
 
     private static Status status;
-    Tile[][][] board = buildBoard();
-    private static int[] playerHealth = {0, 0};
-
-    private PlayerRole localRole;
-    private PlayerRole remoteRole;
-    private final String localPlayerName;
-    private String remotePlayerName;
-
-    private List<LocalBoardChangeListener> boardChangeListenerList = new ArrayList<>();
-
-
-
+    private static final int[] playerHealth = {0, 0};
     private static boolean firstDonePlacing;
     private static boolean secondDonePlacing;
+    private final String localPlayerName;
     public boolean firstPlayerDead;
     public boolean secondPlayerDead;
+    Tile[][][] board = buildBoard();
+    private PlayerRole localRole;
+    private PlayerRole remoteRole;
+    private String remotePlayerName;
+    private final List<LocalBoardChangeListener> boardChangeListenerList = new ArrayList<>();
     private BattleshipsProtocolEngine protocolEngine;
 
     public BattleshipsImpl(String localPlayerName) {
@@ -45,38 +40,53 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     @Override
     public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException {
 
-        //check status
-        if (status != Status.SET) {
-            throw new StatusException(WRONG_GAME_STATUS);
-        }
-        //check shipCounter
-        if (pR == PlayerRole.FIRST && firstDonePlacing || pR == PlayerRole.SECOND && secondDonePlacing) {
-            throw new GameException(PLACED_ALL_SHIPS);
-        }
-        //check coords
-        checkCoords(xCoord, yCoord);
         //check player
         int player = (pR == PlayerRole.FIRST) ? 0 : 1;
-        //check ship
-        if (this.board[player][xCoord][yCoord].isShip()) {
-            throw new GameException(SHIP_ALREADY);
-        }
-        //place ship
-        this.board[player][xCoord][yCoord].setShip(true);
-        //increase shipCounter;
-        playerHealth[player]++;
+        //local
+        if (pR == localRole) {
 
-
-        //check shipCounter for status change
-        if (playerHealth[player] == 3) {
-            switch (pR) {
-                case FIRST -> firstDonePlacing = true;
-                case SECOND -> secondDonePlacing = true;
+            //check status
+            if (status != Status.SET) {
+                throw new StatusException(WRONG_GAME_STATUS);
             }
+            //check shipCounter
+            if (pR == PlayerRole.FIRST && firstDonePlacing || pR == PlayerRole.SECOND && secondDonePlacing) {
+                throw new GameException(PLACED_ALL_SHIPS);
+            }
+            //check coords
+            checkCoords(xCoord, yCoord);
+
+            //check ship
+            if (this.board[player][xCoord][yCoord].isShip()) {
+                throw new GameException(SHIP_ALREADY);
+            }
+            //place ship
+            this.board[player][xCoord][yCoord].setShip(true);
+            //increase shipCounter;
+            playerHealth[player]++;
+
+            //check shipCounter for status change
+            if (playerHealth[player] == 3) {
+                switch (pR) {
+                    case FIRST -> firstDonePlacing = true;
+                    case SECOND -> secondDonePlacing = true;
+                }
+            }
+
+            this.protocolEngine.setShip(pR, xCoord, yCoord);
         }
+        //remote
+        else {
+            //place ship
+            this.board[player][xCoord][yCoord].setShip(true);
+
+        }
+
         if (firstDonePlacing && secondDonePlacing) {
             status = Status.ATTACK_FIRST;
         }
+
+        ////TODO boardchange
         return true;
     }
 
@@ -84,54 +94,59 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     @Override
     public boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException {
 
-        //check status
-        System.out.println("1");
-        if (status != Status.ATTACK_FIRST && status != Status.ATTACK_SECOND) {
-            throw new StatusException(WRONG_GAME_STATUS);
-        }
-        //check player
-        System.out.println("2");
-
-        if (pR == PlayerRole.FIRST && status != Status.ATTACK_FIRST ||
-                pR == PlayerRole.SECOND && status != Status.ATTACK_SECOND) {
-            throw new GameException(NOT_YOUR_TURN);
-        }
-        System.out.println("3");
-
-        //check coords
-        checkCoords(xCoord, yCoord);
-
         int player = (pR == PlayerRole.FIRST) ? 1 : 0;
-        //check attackedYet
-        if (this.board[player][xCoord][yCoord].isAttacked()) {
-            throw new GameException(ALREADY_ATTACKED);
-        }
-        //check ship
-        System.out.println("4");
-        if (this.board[player][xCoord][yCoord].isShip()) {
-            this.board[player][xCoord][yCoord].setAttacked(true);
-            playerHealth[player]--;
-        } else {
-            //no ship
-            changeStatus();
-        System.out.println("5");
-            return false;
-        }
 
-        //check HP
-        if (playerHealth[player] == 0) {
-            switch (pR) {
-                case FIRST -> {
-                    secondPlayerDead = true;
-                    status = Status.END;
-                }
-                case SECOND -> {
-                    firstPlayerDead = true;
-                    status = Status.END;
+        if (pR == localRole) {
+            //check status
+            if (status != Status.ATTACK_FIRST && status != Status.ATTACK_SECOND) {
+                throw new StatusException(WRONG_GAME_STATUS);
+            }
+            if (pR == PlayerRole.FIRST && status != Status.ATTACK_FIRST ||
+                    pR == PlayerRole.SECOND && status != Status.ATTACK_SECOND) {
+                throw new GameException(NOT_YOUR_TURN);
+            }
+            //check coords
+            checkCoords(xCoord, yCoord);
+            //check attackedYet
+            if (this.board[player][xCoord][yCoord].isAttacked()) {
+                throw new GameException(ALREADY_ATTACKED);
+            }
+            //check ship
+            if (this.board[player][xCoord][yCoord].isShip()) {
+                this.board[player][xCoord][yCoord].setAttacked(true);
+                playerHealth[player]--;
+            } else {
+                //no ship
+                changeStatus();
+                System.out.println("5");
+                //TODO boardchange
+                return false;
+            }
+
+            //check HP
+            if (playerHealth[player] == 0) {
+                switch (pR) {
+                    case FIRST -> {
+                        secondPlayerDead = true;
+                        status = Status.END;
+                    }
+                    case SECOND -> {
+                        firstPlayerDead = true;
+                        status = Status.END;
+                    }
                 }
             }
+            this.protocolEngine.attack(pR, xCoord, yCoord);
+
+            changeStatus();
+            //TODO boardchange
+
+        } else {
+            this.board[player][xCoord][yCoord].setAttacked(true);
+
         }
-        changeStatus();
+
+        //TODO boardchange
         return true;
 
     }
@@ -165,7 +180,8 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
     }
 
-    public void setProtocolEngine(BattleshipsProtocolEngine protocolEngine){
+    public void setProtocolEngine(BattleshipsProtocolEngine protocolEngine) {
+
         this.protocolEngine = protocolEngine;
         this.protocolEngine.subscribeGameSessionEstablishedListener(this);
     }
@@ -178,6 +194,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
     @Override
     public Status getStatus() {
+
         return status;
 
     }
@@ -186,11 +203,11 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     public boolean isActive() {
 
         if (this.localRole == null) return false;
-        return(
+        return (
                 (this.getStatus() == Status.ATTACK_FIRST && this.localRole == PlayerRole.FIRST) ||
                         (this.getStatus() == Status.ATTACK_SECOND && this.localRole == PlayerRole.SECOND) ||
-                        (this.getStatus() == Status.SET )
-                );
+                        (this.getStatus() == Status.SET)
+        );
     }
 
     @Override
@@ -198,11 +215,12 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
         return (
                 (status == Status.END && this.localRole == PlayerRole.FIRST && secondPlayerDead) ||
-                    (status == Status.END && this.localRole == PlayerRole.SECOND && firstPlayerDead));
+                        (status == Status.END && this.localRole == PlayerRole.SECOND && firstPlayerDead));
     }
 
     @Override
     public boolean hasLost() {
+
         return !this.hasWon();
     }
 
@@ -216,7 +234,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     @Override
     public void gameSessionEstablished(boolean oracle, String partnerName) {
 
-        System.out.println(this.localPlayerName + GAME_SESSION_ESTABLISHED + partnerName );
+        System.out.println(this.localPlayerName + GAME_SESSION_ESTABLISHED + partnerName);
         this.localRole = oracle ? PlayerRole.FIRST : PlayerRole.SECOND;
         this.remoteRole = this.localRole == PlayerRole.FIRST ? PlayerRole.SECOND : PlayerRole.FIRST;
         this.remotePlayerName = partnerName;
