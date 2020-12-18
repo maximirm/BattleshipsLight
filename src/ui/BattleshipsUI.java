@@ -13,15 +13,11 @@ import java.util.LinkedList;
 public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstablishedListener, TCPStreamCreatedListener {
 
 
-    private static final String WRONG_GAME_STATUS = "the method called in wrong game Status";
-    private static final String GAME_EXCEPTION = "u can't do this";
     private static final String OPEN_COMMAND = "Open a new Game";
     private static final String CONNECT_COMMAND = "Connect to a game";
     private static final String EXIT_COMMAND = "leave the game";
     private static final String SET_COMMAND = "Set a ship";
     private static final String ATTACK_COMMAND = "Attack";
-    private static final String ATTACK = "alright";
-    private static final String SET = "amazing!";
     private static final String ENTER_X = "enter x-coordinate";
     private static final String ENTER_Y = "enter y-coordinate";
     private static final String WAIT_FOR_OTHER_PLAYER_TO_CONNECT = "Opened a new game - wait until other player is connected";
@@ -30,7 +26,6 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     private static final String YOU_WON = "you won";
     private static final String YOU_LOST = "you lost";
     private static final String ERROR = "unexpected error";
-    private static final String GAME_SESSION_CREATED = "unexpected error";
     private static final String YOUR_TURN = "its your turn";
     private static final String WAIT_FOR_OTHER_PLAYER = "its not your turn. please wait";
     private static final String EXIT_MESSAGE = "Game closed";
@@ -49,11 +44,17 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
     }
 
-    public LinkedList<Command> returnCommandList() {
+    public LinkedList<Command> returnNetworkList(){
         LinkedList<Command> list = new LinkedList<>();
         list.add(createExitCommand());
         list.add(createOpenCommand());
         list.add(createConnectCommand());
+        return list;
+    }
+
+    public LinkedList<Command> returnCommandList() {
+        LinkedList<Command> list = new LinkedList<>();
+        list.add(createExitCommand());
         list.add(createSetCommand());
         list.add(createAttackCommand());
         return list;
@@ -103,10 +104,11 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
                 try {
                     doSet();
-                } catch (StatusException | GameException e) {
+                    doPrint();
+                } catch (StatusException | GameException | IOException e) {
                     System.out.println(e.getLocalizedMessage());
                 }
-                return SET;
+                return "\n";
             }
 
             @Override
@@ -129,13 +131,12 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
                     System.out.println(e.getLocalizedMessage());
 
                 }
-                return ATTACK;
+                return "\n";
             }
 
             @Override
             public String description() {
 
-                //TODO: implement
                 return ATTACK_COMMAND;
             }
         };
@@ -149,6 +150,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
                 try {
                     doExit();
+                    System.exit(0);
                 } catch (IOException e) {
                     System.out.println(ERROR);
                 }
@@ -185,7 +187,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     public void doSet() throws StatusException, GameException {
         int x = Console.readInteger(ENTER_X);
         int y = Console.readInteger(ENTER_Y);
-        localBoard.setShip(this.localBoard.getLocalRole(), x,y);
+        localBoard.setShip(this.localBoard.getLocalRole(),x,y);
 
     }
 
@@ -215,13 +217,8 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     @Override
     public void gameSessionEstablished(boolean oracle, String partnerName) {
 
-        System.out.println(GAME_SESSION_CREATED);
         this.partnerName = partnerName;
-        if(oracle){
-            System.out.println(YOUR_TURN);
-        } else {
-            System.out.println(WAIT_FOR_OTHER_PLAYER);
-        }
+
 
     }
 
@@ -261,5 +258,10 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     private boolean alreadyConnected(){
 
         return this.tcpStream != null;
+    }
+
+    public boolean gameStarted(){
+        return this.localBoard.getLocalRole() != null;
+
     }
 }

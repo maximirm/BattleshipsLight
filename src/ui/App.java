@@ -17,9 +17,18 @@ public class App {
     public static void main(String[] args) {
         System.out.println(WELCOME);
         String playerName = Console.readString(ENTER_NAME);
-
         BattleshipsUI userInterface = new BattleshipsUI(playerName);
+
+        LinkedList<Command> networkList = userInterface.returnNetworkList();
         LinkedList<Command> commandList = userInterface.returnCommandList();
+        System.out.println(buildCommandMenu(networkList));
+        System.out.println(selectCommand(networkList).execute());
+        boolean connected = false;
+        do {
+            if(userInterface.gameStarted()){
+                connected = true;
+            }
+        } while (!connected);
 
         do {
             System.out.println(buildCommandMenu(commandList));

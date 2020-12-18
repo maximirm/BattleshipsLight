@@ -15,9 +15,8 @@ public interface Battleships {
      * @return SetResult
      * @throws StatusException      if method is called in wrong GameStatus
      * @throws GameException        if player placed all ships already
-     * @throws NullPointerException if coordinates out of bounds
      */
-    boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException;
+    boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException;
 
     /**
      * attack a ship on the board

@@ -17,7 +17,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     private static final String PLACED_ALL_SHIPS = "u placed all your ships already - please wait for second player";
     private static final String NOT_YOUR_TURN = "its not your turn - please wait";
     private static final String ALREADY_ATTACKED = "you already attacked there";
-    private static final String GAME_SESSION_ESTABLISHED = " game session established ";
+    private static final String GAME_SESSION_ESTABLISHED = "game session established with: ";
 
     private static Status status;
     private static final int[] playerHealth = {0, 0};
@@ -34,7 +34,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     private BattleshipsProtocolEngine protocolEngine;
 
     @Override
-    public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException {
+    public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
 
         //check player
         int player = (pR == PlayerRole.FIRST) ? 0 : 1;
@@ -82,7 +82,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             status = Status.ATTACK_FIRST;
         }
 
-        this.notifyBoardChanged();
+
         return true;
     }
 
@@ -212,7 +212,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     @Override
     public void gameSessionEstablished(boolean oracle, String partnerName) {
 
-        System.out.println(this.localPlayerName + GAME_SESSION_ESTABLISHED + partnerName);
+        System.out.println(GAME_SESSION_ESTABLISHED + partnerName);
         this.localRole = oracle ? PlayerRole.FIRST : PlayerRole.SECOND;
         this.remoteRole = this.localRole == PlayerRole.FIRST ? PlayerRole.SECOND : PlayerRole.FIRST;
         this.remotePlayerName = partnerName;
@@ -242,10 +242,10 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
         return board;
     }
 
-    private void checkCoords(int xCoord, int yCoord) {
+    private void checkCoords(int xCoord, int yCoord) throws GameException {
 
         if (xCoord >= this.board[0].length || yCoord >= this.board[0].length)
-            throw new NullPointerException(COORDS_OUTSIDE);
+            throw new GameException(COORDS_OUTSIDE);
 
     }
 

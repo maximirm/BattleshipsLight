@@ -23,23 +23,38 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
     private static final String DEFAULT_NAME = "testName ";
     private static final String UNKNOWN_METHOD_ID = "unknown method id ";
     private static final String CONNECTION_LOSS = "IOException caught - most probably connection close - stop thread / stop engine ";
-    private static final String FLIP_COIN = "coin flip ";
-    private static final String ENGINE_STARTED = "protocol engine started ";
     private static final String UNKNOWN_ROLE = "unknown role";
 
     private final List<GameSessionEstablishedListener> sessionCreatedListenerList = new ArrayList<>();
-
-
+    private final Battleships gameEngine;
     private OutputStream os;
     private InputStream is;
-    private final Battleships gameEngine;
-
     private boolean oracle;
     private String partnerName;
 
     private Thread protocolThread = null;
     private String name;
 
+
+    public BattleshipsProtocolEngine(InputStream is, OutputStream os, Battleships gameEngine) {
+
+        this.gameEngine = gameEngine;
+        this.is = is;
+        this.os = os;
+
+    }
+
+    public BattleshipsProtocolEngine(Battleships gameEngine, String name) {
+
+        this.gameEngine = gameEngine;
+        this.name = name;
+    }
+
+    public BattleshipsProtocolEngine(Battleships gameEngine) {
+
+        this.gameEngine = gameEngine;
+        this.name = DEFAULT_NAME;
+    }
 
     @Override
     public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws GameException, NullPointerException {
@@ -60,7 +75,6 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
     @Override
     public void run() {
 
-        System.out.println(ENGINE_STARTED + FLIP_COIN);
         long seed = this.hashCode() * System.currentTimeMillis();
         Random random = new Random(seed);
         int localInt = 0, remoteInt = 0;
@@ -70,12 +84,10 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
             DataInputStream dis = new DataInputStream(this.is);
             do {
                 localInt = random.nextInt();
-                System.out.println(FLIP_COIN + localInt);
                 dos.writeInt(localInt);
                 remoteInt = dis.readInt();
             } while (localInt == remoteInt);
             this.oracle = localInt < remoteInt;
-            System.out.println(this.oracle);
             dos.writeUTF(this.name);
             this.partnerName = dis.readUTF();
         } catch (IOException e) {
@@ -94,16 +106,13 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
                         } catch (InterruptedException e) {
                             //won't happen
                         }
-                        ocListener.gameSessionEstablished(
-                                BattleshipsProtocolEngine.this.oracle,
+                        ocListener.gameSessionEstablished(BattleshipsProtocolEngine.this.oracle,
                                 BattleshipsProtocolEngine.this.partnerName);
-
                     }
                 }).start();
             }
         }
 
-        System.out.println("protocol engine started");
         try {
             boolean again = true;
             while (again) {
@@ -149,26 +158,6 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
 
         this.sessionCreatedListenerList.remove(ocListener);
 
-    }
-
-    public BattleshipsProtocolEngine(InputStream is, OutputStream os, Battleships gameEngine) {
-
-        this.gameEngine = gameEngine;
-        this.is = is;
-        this.os = os;
-
-    }
-
-    public BattleshipsProtocolEngine(Battleships gameEngine, String name) {
-
-        this.gameEngine = gameEngine;
-        this.name = name;
-    }
-
-    public BattleshipsProtocolEngine(Battleships gameEngine) {
-
-        this.gameEngine = gameEngine;
-        this.name = DEFAULT_NAME;
     }
 
     private void deserializeSet() throws GameException {

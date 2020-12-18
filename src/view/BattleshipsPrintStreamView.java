@@ -18,9 +18,25 @@ public class BattleshipsPrintStreamView implements PrintStreamView{
     }
 
     @Override
-    public void print(PrintStream printStream) throws IOException {
+    public void print(PrintStream pS) throws IOException {
 
-        printStream.print("HIER SIEHT MAN BALD EIN BOARD");
 
+        int player = localRole == PlayerRole.FIRST ? 0 : 1;
+
+        pS.println("   0  1  2");
+
+        for (int i = 0; i < 3; i++) {
+            pS.print(i + " ");
+            for (int j = 0; j < 3; j++) {
+                boolean ship = this.board[player][j][i].isShip();
+                if (!ship) {
+                    pS.print(" - ");
+                } else {
+                    pS.print(" X ");
+                }
+            }
+        pS.print("\n");
+        }
     }
+
 }

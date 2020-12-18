@@ -16,7 +16,7 @@ public class TCPStream extends Thread {
     private final String name;
     private TCPStreamCreatedListener listener = null;
     private Socket socket = null;
-    
+
     private boolean fatalError = false;
 
     public final int WAIT_LOOP_IN_MILLIS = 1000; // 30 sec
@@ -62,14 +62,14 @@ public class TCPStream extends Thread {
             System.err.println(this.getClass().getSimpleName() + ": problems while killing: " + e.getLocalizedMessage());
         }
     }
-    
+
     @Override
     public void run() {
         this.createThread = Thread.currentThread();
         try {
             if(this.asServer) {
-                System.out.println(this.getClass().getSimpleName() +
-                        ": note: this implementation will only accept *one* connection attempt as server");
+//                System.out.println(this.getClass().getSimpleName() +
+//                        ": note: this implementation will only accept *one* connection attempt as server");
                 this.tcpServer = new TCPServer();
                 this.socket = tcpServer.getSocket();
             } else {
@@ -88,7 +88,7 @@ public class TCPStream extends Thread {
             this.fatalError = true;
         }
     }
-    
+
     public void close() throws IOException {
         if(this.socket != null) {
             this.socket.close();
@@ -112,11 +112,11 @@ public class TCPStream extends Thread {
         if(this.createThread == null) {
             /* in unit tests there is a race condition between the test
             thread and those newly created tests to establish a connection.
-            
+
             Thus, this call could be in the right order - give it a
             second chance
             */
-            
+
             try {
                 Thread.sleep(this.waitInMillis);
             } catch (InterruptedException ex) {
@@ -128,8 +128,8 @@ public class TCPStream extends Thread {
                 throw new IOException("must start TCPStream thread first by calling start()");
             }
         }
-        
-        
+
+
         while(!this.fatalError && this.socket == null) {
             try {
                 Thread.sleep(this.waitInMillis);
@@ -138,7 +138,7 @@ public class TCPStream extends Thread {
             }
         }
     }
-    
+
     public void checkConnected() throws IOException {
         if(this.socket == null) {
             //<<<<<<<<<<<<<<<<<<debug
@@ -148,12 +148,12 @@ public class TCPStream extends Thread {
             throw new IOException(s);
         }
     }
-    
+
     public InputStream getInputStream() throws IOException {
         this.checkConnected();
         return this.socket.getInputStream();
     }
-    
+
     public OutputStream getOutputStream() throws IOException {
         this.checkConnected();
         return this.socket.getOutputStream();
@@ -180,7 +180,7 @@ public class TCPStream extends Thread {
             b.append("opened port ");
             b.append(port);
             b.append(" on localhost and wait");
-            System.out.println(b.toString());
+//            System.out.println(b.toString());
             //>>>>>>>>>>>>>>>>>>>debug
 
             Socket socket = this.srvSocket.accept();
@@ -191,9 +191,9 @@ public class TCPStream extends Thread {
             b.append(name);
             b.append("): ");
             b.append("connected");
-            System.out.println(b.toString());
+//            System.out.println(b.toString());
             //>>>>>>>>>>>>>>>>>>>debug
-            
+
             return socket;
         }
 
@@ -220,7 +220,7 @@ public class TCPStream extends Thread {
                     b.append("): ");
                     b.append("try to connect localhost port ");
                     b.append(port);
-                    System.out.println(b.toString());
+//                    System.out.println(b.toString());
                     //>>>>>>>>>>>>>>>>>>>debug
                     Socket socket = new Socket(TCPStream.this.remoteEngine, port);
                     return socket;

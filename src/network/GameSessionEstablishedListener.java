@@ -4,7 +4,8 @@ public interface GameSessionEstablishedListener {
 
     /**
      * is called when oracle was created
-     * @param oracle
+     * @param partnerName partner name
+     * @param oracle    oracle
      */
     void gameSessionEstablished(boolean oracle, String partnerName);
 
