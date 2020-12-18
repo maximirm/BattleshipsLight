@@ -81,6 +81,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
         }
         if (firstDonePlacing && secondDonePlacing) {
             this.status = Status.ATTACK_FIRST;
+            this.notifyBoardChanged();
         }
 
         return true;
@@ -203,7 +204,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
         System.out.println(GAME_SESSION_ESTABLISHED + partnerName);
         this.localRole = oracle ? PlayerRole.FIRST : PlayerRole.SECOND;
-        PlayerRole remoteRole = this.localRole == PlayerRole.FIRST ? PlayerRole.SECOND : PlayerRole.FIRST;
         status = Status.SET;
 
     }
