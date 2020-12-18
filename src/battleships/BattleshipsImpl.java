@@ -111,14 +111,13 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
         if (!this.board[defendingPlayer][xCoord][yCoord].isShip()) {
             //no ship
             this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
-            changeStatus();
 
             if (pR == localRole) {
                 this.protocolEngine.attack(pR, xCoord, yCoord);
             }
-            if(pR != localRole){
-                this.notifyBoardChanged();
-            }
+            this.notifyBoardChanged();
+            changeStatus();
+
             return false;
         }
 
@@ -129,21 +128,19 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
                 case FIRST -> {
                     secondPlayerDead = true;
                     status = Status.END;
-                    this.notifyBoardChanged();
+
                 }
                 case SECOND -> {
                     firstPlayerDead = true;
                     status = Status.END;
-                    this.notifyBoardChanged();
                 }
             }
         }
         if (pR == localRole) {
             this.protocolEngine.attack(pR, xCoord, yCoord);
         }
-        if (pR != localRole){
         this.notifyBoardChanged();
-        }
+
         changeStatus();
 
         return true;
@@ -260,6 +257,11 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             public void run() {
 
                 for (LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     listener.changed();
                 }
 

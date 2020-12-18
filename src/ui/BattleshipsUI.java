@@ -24,7 +24,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     private static final String ENTER_Y = "enter y-coordinate";
     private static final String WAIT_FOR_OTHER_PLAYER_TO_CONNECT = "Opened a new game - wait until other player is connected";
     private static final String CONNECTED = "Connected";
-    private static final String ENTER_HOST_NAME = "Enter the hostname";
+    private static final String ENTER_HOST_NAME = "Enter the hostname (localhost)";
     private static final String YOU_WON = "you won";
     private static final String YOU_LOST = "you lost";
     private static final String ERROR = "unexpected error";
@@ -265,8 +265,6 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             }
         } else if (this.gameEngine.isActive()) {
             System.out.println(YOUR_TURN);
-        } else {
-            System.out.println(WAIT_FOR_OTHER_PLAYER);
         }
     }
 
