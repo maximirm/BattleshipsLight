@@ -210,6 +210,12 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     }
 
     @Override
+    public boolean placementDone() {
+
+        return (localRole == PlayerRole.FIRST && firstDonePlacing) || (localRole == PlayerRole.SECOND && secondDonePlacing);
+    }
+
+    @Override
     public void subscribeChangeListener(LocalBoardChangeListener changeListener) {
 
         this.boardChangeListenerList.add(changeListener);
@@ -271,4 +277,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     public PrintStreamView getPrintStreamView(){
         return new BattleshipsPrintStreamView(this.board, localRole);
     }
+
+
 }

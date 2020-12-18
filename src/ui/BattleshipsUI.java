@@ -29,10 +29,10 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     private static final String YOUR_TURN = "its your turn";
     private static final String WAIT_FOR_OTHER_PLAYER = "its not your turn. please wait";
     private static final String EXIT_MESSAGE = "Game closed";
+    private static final String PLACEMENT_DONE = "You placed all your ships - wait a few secs until opponent has finished";
     private final BattleshipsImpl gameEngine;
     BattleShipsLocalBoard localBoard;
     private final String playerName;
-    private String partnerName;
     private TCPStream tcpStream;
     private BattleshipsProtocolEngine protocolEngine;
 
@@ -116,7 +116,9 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             public String execute() {
 
                 try {
-                    //TODO check if player placed all ships
+                    if(localBoard.placementDone()){
+                        return PLACEMENT_DONE;
+                    }
                     doSet();
                     doPrint();
                 } catch (StatusException | GameException | IOException e) {
@@ -238,9 +240,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
     @Override
     public void gameSessionEstablished(boolean oracle, String partnerName) {
-
-        this.partnerName = partnerName;
-
+        //not needed
     }
 
     @Override
@@ -292,4 +292,6 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
         return this.localBoard.getStatus();
     }
+
+
 }
