@@ -1,8 +1,6 @@
 package battleshipsTests;
 
-import battleships.Battleships;
-import battleships.BattleshipsProtocolEngine;
-import battleships.PlayerRole;
+import battleships.*;
 import exceptions.GameException;
 import exceptions.StatusException;
 import network.ProtocolEngine;
@@ -21,53 +19,197 @@ public class EngineTests {
     private static final int PORT_NUMBER = 7777;
     public static final String ALICE = "Alice";
     public static final String BOB = "Bob";
+    public static final String USE_PORT = "use port: ";
+    private static final String THREAD_SLEEP = "thread launching";
+    private static int port = 0;
 
     private Battleships getBSEngine(InputStream is, OutputStream os, Battleships gameEngine) {
 
         return new BattleshipsProtocolEngine(is, os, gameEngine);
     }
+//    @Test
+//    public void integrationTest1() throws IOException, InterruptedException {
+//
+//        BattleshipsImpl aliceGameEngine = new BattleshipsImpl(ALICE);
+//        BattleshipsProtocolEngine aliceBSProtocolEngine = new BattleshipsProtocolEngine(aliceGameEngine,ALICE);
+//        aliceGameEngine.setProtocolEngine(aliceBSProtocolEngine);
+//
+//        BattleshipsImpl bobGameEngine = new BattleshipsImpl(BOB);
+//        BattleshipsProtocolEngine bobBSProtocolEngine = new BattleshipsProtocolEngine(bobGameEngine,BOB);
+//        bobGameEngine.setProtocolEngine(bobBSProtocolEngine);
+//
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        //                                    tcp                                                                 //
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//        int port = this.getPortNumber();
+//        TCPStream aliceSide = new TCPStream(port, true, "aliceSide");
+//        TCPStream bobSide = new TCPStream(port, false, "bobSide");
+//
+//        aliceSide.start(); bobSide.start();
+//        aliceSide.waitForConnection();bobSide.waitForConnection();
+//
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        //                                        launch protocol engine                                          //
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//        aliceBSProtocolEngine.handleConnection(aliceSide.getInputStream(), aliceSide.getOutputStream());
+//        bobBSProtocolEngine.handleConnection(bobSide.getInputStream(), bobSide.getOutputStream());
+//        System.out.println(THREAD_SLEEP);
+//        Thread.sleep(SLEEP_DURATION);
+//
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        //                                         testResult                                                     //
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//        Assert.assertTrue(aliceGameEngine.getStatus() == bobGameEngine.getStatus());
+//
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        //                                          tidy up                                                       //
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//        aliceBSProtocolEngine.close();
+//        bobBSProtocolEngine.close();
+//        Thread.sleep(SLEEP_DURATION);
+//
+//    }
 
     @Test
-    public void networkTest() throws IOException, InterruptedException, StatusException, GameException {
-        //alice' game engine tester
-        BSReadTester aliceGameEngineTester = new BSReadTester();
-        // protocol engine on alice' side
-        BattleshipsProtocolEngine aliceBattleshipsProtocolEngine = new BattleshipsProtocolEngine(aliceGameEngineTester);
-        // same protocol engine -> protocol engine
-        ProtocolEngine aliceProtocolEngine = aliceBattleshipsProtocolEngine;
-        // -> and game engine
-        Battleships aliceGameEngineSide = aliceBattleshipsProtocolEngine;
+    public void integrationTestFullGame() throws IOException, InterruptedException, StatusException, GameException {
 
-        BSReadTester bobGameEngineTester = new BSReadTester();
-        ProtocolEngine bobProtocolEngine = new BattleshipsProtocolEngine(bobGameEngineTester);
+        BattleshipsImpl aliceGameEngine = new BattleshipsImpl(ALICE);
+        BattleshipsProtocolEngine aliceBSProtocolEngine = new BattleshipsProtocolEngine(aliceGameEngine,ALICE);
+        aliceGameEngine.setProtocolEngine(aliceBSProtocolEngine);
+
+        BattleshipsImpl bobGameEngine = new BattleshipsImpl(BOB);
+        BattleshipsProtocolEngine bobBSProtocolEngine = new BattleshipsProtocolEngine(bobGameEngine,BOB);
+        bobGameEngine.setProtocolEngine(bobBSProtocolEngine);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //                                              tcp                                                       //
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        TCPStream aliceServer = new TCPStream(PORT_NUMBER, true, ALICE);
-        TCPStream bobClient = new TCPStream(PORT_NUMBER, false, BOB);
-        aliceServer.start(); bobClient.start();
-        aliceServer.waitForConnection(); bobClient.waitForConnection();
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //                                              protocol engine                                           //
+        //                                    tcp                                                                 //
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        aliceProtocolEngine.handleConnection(aliceServer.getInputStream(),aliceServer.getOutputStream());
-        bobProtocolEngine.handleConnection(bobClient.getInputStream(),bobClient.getOutputStream());
-        System.out.println("threads need a few seconds to launch");
+        int port = this.getPortNumber();
+        TCPStream aliceSide = new TCPStream(port, true, "aliceSide");
+        TCPStream bobSide = new TCPStream(port, false, "bobSide");
+
+        aliceSide.start(); bobSide.start();
+        aliceSide.waitForConnection();bobSide.waitForConnection();
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //                                        launch protocol engine                                          //
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        aliceBSProtocolEngine.handleConnection(aliceSide.getInputStream(), aliceSide.getOutputStream());
+        bobBSProtocolEngine.handleConnection(bobSide.getInputStream(), bobSide.getOutputStream());
+        System.out.println(THREAD_SLEEP);
         Thread.sleep(SLEEP_DURATION);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        //                                                run                                                     //
+        //                                         scenario                                                       //
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        aliceGameEngineSide.setShip(PlayerRole.FIRST,0,0);
-        Assert.assertTrue(bobGameEngineTester.lastCallSet);
-        Assert.assertEquals(PlayerRole.FIRST, bobGameEngineTester.pR);
-        Assert.assertEquals(0, bobGameEngineTester.xCoord);
-        Assert.assertEquals(0, bobGameEngineTester.yCoord);
+
+        System.out.println(aliceGameEngine.isActive());
+        BattleShipsLocalBoard playerFirst = aliceGameEngine.isActive() ? aliceGameEngine : bobGameEngine;
+        BattleShipsLocalBoard playerSecond = aliceGameEngine.isActive() ? bobGameEngine : aliceGameEngine;
+        PlayerRole alice = playerFirst.getLocalRole();
+        PlayerRole bob = playerSecond.getLocalRole();
+        Assert.assertTrue(playerFirst.setShip(alice, 0, 0));
+        Assert.assertTrue(playerFirst.setShip(alice, 0, 1));
+        Assert.assertTrue(playerFirst.setShip(alice, 0, 2));
+        Assert.assertTrue(playerSecond.setShip(bob, 0, 0));
+        Assert.assertTrue(playerSecond.setShip(bob, 0, 1));
+        Assert.assertTrue(playerSecond.setShip(bob, 0, 2));
+        System.out.println(playerFirst.getStatus());
+        System.out.println(playerSecond.getStatus());
+        System.out.println(playerFirst.getStatus());
+        System.out.println(playerSecond.getStatus());
+
+        if(alice == PlayerRole.FIRST){
+            Assert.assertTrue(playerFirst.attack(alice, 0, 0));
+            Assert.assertTrue(playerSecond.attack(bob, 0, 0));
+            Assert.assertTrue(playerFirst.attack(alice, 0, 1));
+            Assert.assertTrue(playerSecond.attack(bob, 0, 1));
+            Assert.assertTrue(playerFirst.attack(alice, 0, 2));
+
+        } else if (alice == PlayerRole.SECOND){
+            Assert.assertTrue(playerSecond.attack(bob, 0, 0));
+            Assert.assertTrue(playerFirst.attack(alice, 0, 0));
+            Assert.assertTrue(playerSecond.attack(bob, 0, 1));
+            Assert.assertTrue(playerFirst.attack(alice, 0, 1));
+            Assert.assertTrue(playerSecond.attack(bob, 0, 2));
+        } else System.out.println("fail");
+
+
+//        Assert.assertTrue(playerFirst.hasWon());
+//        Assert.assertTrue(playerSecond.hasLost());
+
+
+
+
+
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        //                                          tidy up                                                       //
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        aliceBSProtocolEngine.close();
+        bobBSProtocolEngine.close();
+        Thread.sleep(SLEEP_DURATION);
 
     }
+
+    private int getPortNumber(){
+        if(EngineTests.port == 0){
+            EngineTests.port = PORT_NUMBER;
+        } else{
+            EngineTests.port++;
+        }
+        System.out.println(USE_PORT+ EngineTests.port);
+        return EngineTests.port;
+    }
+
+//    @Test
+//    public void networkTest() throws IOException, InterruptedException, StatusException, GameException {
+//        //alice' game engine tester
+//        BSReadTester aliceGameEngineTester = new BSReadTester();
+//        // protocol engine on alice' side
+//        BattleshipsProtocolEngine aliceBattleshipsProtocolEngine = new BattleshipsProtocolEngine(aliceGameEngineTester);
+//        // same protocol engine -> protocol engine
+//        ProtocolEngine aliceProtocolEngine = aliceBattleshipsProtocolEngine;
+//        // -> and game engine
+//        Battleships aliceGameEngineSide = aliceBattleshipsProtocolEngine;
+//
+//        BSReadTester bobGameEngineTester = new BSReadTester();
+//        ProtocolEngine bobProtocolEngine = new BattleshipsProtocolEngine(bobGameEngineTester);
+//
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        //                                              tcp                                                       //
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        TCPStream aliceServer = new TCPStream(PORT_NUMBER, true, ALICE);
+//        TCPStream bobClient = new TCPStream(PORT_NUMBER, false, BOB);
+//        aliceServer.start(); bobClient.start();
+//        aliceServer.waitForConnection(); bobClient.waitForConnection();
+//
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        //                                              protocol engine                                           //
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//        aliceProtocolEngine.handleConnection(aliceServer.getInputStream(),aliceServer.getOutputStream());
+//        bobProtocolEngine.handleConnection(bobClient.getInputStream(),bobClient.getOutputStream());
+//        System.out.println("threads need a few seconds to launch");
+//        Thread.sleep(SLEEP_DURATION);
+//
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        //                                                run                                                     //
+//        ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//        aliceGameEngineSide.setShip(PlayerRole.FIRST,0,0);
+//        Assert.assertTrue(bobGameEngineTester.lastCallSet);
+//        Assert.assertEquals(PlayerRole.FIRST, bobGameEngineTester.pR);
+//        Assert.assertEquals(0, bobGameEngineTester.xCoord);
+//        Assert.assertEquals(0, bobGameEngineTester.yCoord);
+//
+//    }
 
 
 

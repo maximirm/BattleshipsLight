@@ -5,6 +5,8 @@ import exceptions.StatusException;
 
 public interface Battleships {
 
+    int DEFAULT_PORT = 5555;
+
     /**
      * place a ship on the board
      * @param pR     PlayerRole
@@ -19,7 +21,7 @@ public interface Battleships {
 
     /**
      * attack a ship on the board
-     * @param pR     PlayerRole
+     * @param pR     PlayerRole attacking Player
      * @param xCoord xCoord
      * @param yCoord yCoord
      * @return AttackResult

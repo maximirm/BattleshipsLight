@@ -17,9 +17,9 @@ public interface ProtocolEngine {
      * Stop engine - close streams and release all resources
      * @throws IOException
      */
-//    void close() throws IOException;
-//
-//    void subscribeGameSessionEstablishedListener(GameSessionEstablishedListener ocListener);
-//
-//    void unsubscribeGameSessionEstablishedListener(GameSessionEstablishedListener ocListener);
+    void close() throws IOException;
+
+    void subscribeGameSessionEstablishedListener(GameSessionEstablishedListener ocListener);
+
+    void unsubscribeGameSessionEstablishedListener(GameSessionEstablishedListener ocListener);
 }
