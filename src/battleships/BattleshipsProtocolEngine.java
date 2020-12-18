@@ -50,12 +50,6 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
         this.name = name;
     }
 
-    public BattleshipsProtocolEngine(Battleships gameEngine) {
-
-        this.gameEngine = gameEngine;
-        this.name = DEFAULT_NAME;
-    }
-
     @Override
     public boolean setShip(PlayerRole pR, int xCoord, int yCoord) throws GameException, NullPointerException {
 
@@ -150,13 +144,6 @@ public class BattleshipsProtocolEngine implements Battleships, ProtocolEngine, R
     public void subscribeGameSessionEstablishedListener(GameSessionEstablishedListener ocListener) {
 
         this.sessionCreatedListenerList.add(ocListener);
-
-    }
-
-    @Override
-    public void unsubscribeGameSessionEstablishedListener(GameSessionEstablishedListener ocListener) {
-
-        this.sessionCreatedListenerList.remove(ocListener);
 
     }
 

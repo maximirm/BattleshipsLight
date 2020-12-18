@@ -16,11 +16,12 @@ public class App {
     public static final String INVALID_OPTION = "Select a valid option between 0 and ";
 
 
-
     public static void main(String[] args) throws IOException {
+
         System.out.println(WELCOME);
-        String playerName = Console.readString(ENTER_NAME);
-        BattleshipsUI userInterface = new BattleshipsUI(playerName);
+
+
+        BattleshipsUI userInterface = new BattleshipsUI(Console.readString(ENTER_NAME));
 
         LinkedList<Command> networkList = userInterface.returnNetworkList();
         LinkedList<Command> setList = userInterface.returnSetList();
@@ -30,16 +31,17 @@ public class App {
         boolean connected = false;
 
         do {
-            if(userInterface.gameStarted()){
+            if (userInterface.gameStarted()) {
                 connected = true;
             }
         } while (!connected);
-        userInterface.doPrint();
+        userInterface.printOwnBoard();
 
         do {
             System.out.println(buildCommandMenu(setList));
             System.out.println(selectCommand(setList).execute());
-        } while (userInterface.getStatus()== Status.SET);
+        } while (userInterface.getStatus() == Status.SET);
+        userInterface.printEnemyBoard();
         do {
             System.out.println(buildCommandMenu(attackList));
             System.out.println(selectCommand(attackList).execute());
@@ -48,6 +50,7 @@ public class App {
     }
 
     private static String buildCommandMenu(LinkedList<Command> commands) {
+
         StringBuilder builder = new StringBuilder();
         builder.append(System.lineSeparator());
         builder.append(System.lineSeparator()).append(SELECT_AN_OPTION).append(System.lineSeparator());
@@ -61,12 +64,13 @@ public class App {
     }
 
     static private Command selectCommand(LinkedList<Command> commands) {
+
         do {
             int select = Console.readInteger(SELECT_AN_OPTION);
             if (select >= 0 && select < commands.size()) {
                 return commands.get(select);
             }
-            System.out.println( INVALID_OPTION+ (commands.size() - 1));
+            System.out.println(INVALID_OPTION + (commands.size() - 1));
         }
         while (true);
     }

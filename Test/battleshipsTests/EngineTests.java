@@ -237,7 +237,6 @@ public class EngineTests {
 //
 //    }
 
-
     //    @Test
 //    public void setTest() throws StatusException, GameException {
 //
@@ -286,6 +285,5 @@ public class EngineTests {
 //        Assert.assertEquals(1, bsReceiver.yCoord);
 //    }
 //
-
 
 }

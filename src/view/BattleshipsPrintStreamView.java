@@ -6,7 +6,7 @@ import battleships.Tile;
 import java.io.IOException;
 import java.io.PrintStream;
 
-public class BattleshipsPrintStreamView implements PrintStreamView{
+public class BattleshipsPrintStreamView implements PrintStreamView {
 
     private final Tile[][][] board;
     PlayerRole localRole;
@@ -18,11 +18,44 @@ public class BattleshipsPrintStreamView implements PrintStreamView{
     }
 
     @Override
-    public void print(PrintStream pS) {
+    public void printOwnBoard(PrintStream pS) throws IOException {
+
+        int player = localRole == PlayerRole.FIRST ? 0 : 1;
+        pS.print("\n");
+        pS.println("__________");
+        pS.print("\n");
+        pS.println("My Board: ");
+        pS.println("__________");
+        pS.println("   0  1  2");
+
+        for (int i = 0; i < 3; i++) {
+            pS.print(i + " ");
+            for (int j = 0; j < 3; j++) {
+                boolean ship = this.board[player][j][i].isShip();
+                boolean attacked = this.board[player][j][i].isAttacked();
+                if (attacked) {
+                    pS.print(" O ");
+                } else if (!ship){
+                    pS.print(" - ");
+                } else {
+                    pS.print(" X ");
+                }
+            }
+            pS.print("\n");
+        }
+        pS.println("__________");
+        pS.print("\n");
+
+    }
+
+    @Override
+    public void printEnemyBoard(PrintStream pS) throws IOException {
 
         int enemy = localRole == PlayerRole.FIRST ? 1 : 0;
         pS.print("\n");
-        pS.println("Enemy Board: ");
+        pS.println("__________");
+        pS.print("\n");
+        pS.println("Enemy board: ");
         pS.println("__________");
         pS.println("   0  1  2");
 
@@ -33,7 +66,7 @@ public class BattleshipsPrintStreamView implements PrintStreamView{
                 boolean attacked = this.board[enemy][j][i].isAttacked();
                 if (!attacked) {
                     pS.print(" - ");
-                } else if (!ship){
+                } else if (!ship) {
                     pS.print(" O ");
                 } else {
                     pS.print(" X ");
@@ -43,31 +76,6 @@ public class BattleshipsPrintStreamView implements PrintStreamView{
         }
         pS.println("__________");
         pS.print("\n");
-        int player = localRole == PlayerRole.FIRST ? 0 : 1;
-        pS.println("My Board: ");
-        pS.println("__________");
-        pS.println("   0  1  2");
-
-        for (int i = 0; i < 3; i++) {
-            pS.print(i + " ");
-            for (int j = 0; j < 3; j++) {
-                boolean ship = this.board[player][j][i].isShip();
-                if (!ship) {
-                    pS.print(" - ");
-                } else {
-                    pS.print(" X ");
-                }
-            }
-        pS.print("\n");
-        }
-        pS.println("__________");
-
-
-
-
 
     }
-
-
-
 }

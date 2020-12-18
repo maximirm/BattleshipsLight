@@ -12,10 +12,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class AppTest {
+    private final String ALICE = "alice";
+    private final String BOB = "bob";
 
-    public static final String ALICE = "Alice";
-
-    private Battleships getBattleships() {
+    private Battleships getBattleships( ) {
 
         return new BattleshipsImpl(ALICE);
     }

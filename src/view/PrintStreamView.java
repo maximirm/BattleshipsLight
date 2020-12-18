@@ -5,6 +5,7 @@ import java.io.PrintStream;
 
 public interface PrintStreamView {
 
-    void print(PrintStream printStream) throws IOException;
+    void printOwnBoard(PrintStream printStream) throws IOException;
+    void printEnemyBoard(PrintStream printStream) throws IOException;
 
 }

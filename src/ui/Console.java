@@ -10,6 +10,7 @@ public class Console {
      * @return int
      */
     public static int readInteger(String text) {
+
         Scanner input = new Scanner(System.in);
         int x = -1;
         boolean isNumber;
@@ -29,6 +30,7 @@ public class Console {
     }
 
     public static String readString(String text) {
+
         Scanner input = new Scanner(System.in);
         boolean notEmpty;
 

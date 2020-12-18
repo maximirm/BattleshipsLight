@@ -18,23 +18,19 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     private static final String NOT_YOUR_TURN = "its not your turn - please wait";
     private static final String ALREADY_ATTACKED = "you already attacked there";
     private static final String GAME_SESSION_ESTABLISHED = "game session established with: ";
-    private final String localPlayerName;
     private final List<LocalBoardChangeListener> boardChangeListenerList = new ArrayList<>();
+    private final int[] playerHealth = {0, 0};
     public boolean firstPlayerDead;
     public boolean secondPlayerDead;
-    Tile[][][] board = buildBoard();
-    private Status status = Status.SET;
-    private final int[] playerHealth = {0, 0};
     private boolean firstDonePlacing;
     private boolean secondDonePlacing;
+    private Status status = Status.SET;
     private PlayerRole localRole;
-    private PlayerRole remoteRole;
-    private String remotePlayerName;
     private BattleshipsProtocolEngine protocolEngine;
+    Tile[][][] board = buildBoard();
+
 
     public BattleshipsImpl(String localPlayerName) {
-
-        this.localPlayerName = localPlayerName;
 
     }
 
@@ -90,23 +86,6 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
         return true;
     }
 
-    private void notifyBoardChanged() {
-
-        if (this.boardChangeListenerList.isEmpty()) return;
-
-        (new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                for (LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList) {
-                    listener.changed();
-                }
-
-            }
-        })).start();
-
-    }
-
     @Override
     public boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
 
@@ -133,9 +112,12 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             //no ship
             this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
             changeStatus();
-            this.notifyBoardChanged();
-            if(pR == localRole){
+
+            if (pR == localRole) {
                 this.protocolEngine.attack(pR, xCoord, yCoord);
+            }
+            if(pR != localRole){
+                this.notifyBoardChanged();
             }
             return false;
         }
@@ -147,18 +129,22 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
                 case FIRST -> {
                     secondPlayerDead = true;
                     status = Status.END;
+                    this.notifyBoardChanged();
                 }
                 case SECOND -> {
                     firstPlayerDead = true;
                     status = Status.END;
+                    this.notifyBoardChanged();
                 }
             }
         }
-        if(pR == localRole){
+        if (pR == localRole) {
             this.protocolEngine.attack(pR, xCoord, yCoord);
         }
-        changeStatus();
+        if (pR != localRole){
         this.notifyBoardChanged();
+        }
+        changeStatus();
 
         return true;
 
@@ -220,8 +206,7 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
         System.out.println(GAME_SESSION_ESTABLISHED + partnerName);
         this.localRole = oracle ? PlayerRole.FIRST : PlayerRole.SECOND;
-        this.remoteRole = this.localRole == PlayerRole.FIRST ? PlayerRole.SECOND : PlayerRole.FIRST;
-        this.remotePlayerName = partnerName;
+        PlayerRole remoteRole = this.localRole == PlayerRole.FIRST ? PlayerRole.SECOND : PlayerRole.FIRST;
         status = Status.SET;
 
     }
@@ -264,6 +249,23 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
     public PrintStreamView getPrintStreamView() {
 
         return new BattleshipsPrintStreamView(this.board, localRole);
+    }
+
+    private void notifyBoardChanged() {
+
+        if (this.boardChangeListenerList.isEmpty()) return;
+
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                for (LocalBoardChangeListener listener : BattleshipsImpl.this.boardChangeListenerList) {
+                    listener.changed();
+                }
+
+            }
+        })).start();
+
     }
 
 }

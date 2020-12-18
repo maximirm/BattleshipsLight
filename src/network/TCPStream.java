@@ -7,10 +7,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
- *
  * @author thsc
  */
 public class TCPStream extends Thread {
+
     private final int port;
     private final boolean asServer;
     private final String name;
@@ -27,6 +27,7 @@ public class TCPStream extends Thread {
     private String remoteEngine = "localhost";
 
     public TCPStream(int port, boolean asServer, String name, TCPStreamCreatedListener listener) {
+
         this.port = port;
         this.asServer = asServer;
         this.name = name;
@@ -34,29 +35,33 @@ public class TCPStream extends Thread {
     }
 
     public TCPStream(int port, boolean asServer, String name) {
+
         this(port, asServer, name, null);
     }
 
     public void setStreamCreationListener(TCPStreamCreatedListener listener) {
+
         this.listener = listener;
     }
 
     public void setWaitPeriod(long waitInMillis) {
+
         this.waitInMillis = waitInMillis;
     }
 
     public void kill() {
+
         try {
-            if(this.socket != null) {
+            if (this.socket != null) {
                 this.socket.close();
             }
 
-            if(this.tcpClient != null) {
+            if (this.tcpClient != null) {
                 this.tcpClient.kill();
             }
 
-            if(this.tcpServer != null) {
-                    this.tcpServer.kill();
+            if (this.tcpServer != null) {
+                this.tcpServer.kill();
             }
         } catch (IOException e) {
             System.err.println(this.getClass().getSimpleName() + ": problems while killing: " + e.getLocalizedMessage());
@@ -65,9 +70,10 @@ public class TCPStream extends Thread {
 
     @Override
     public void run() {
+
         this.createThread = Thread.currentThread();
         try {
-            if(this.asServer) {
+            if (this.asServer) {
 //                System.out.println(this.getClass().getSimpleName() +
 //                        ": note: this implementation will only accept *one* connection attempt as server");
                 this.tcpServer = new TCPServer();
@@ -78,7 +84,7 @@ public class TCPStream extends Thread {
             }
 
             // we have got a socket
-            if(this.listener != null) {
+            if (this.listener != null) {
                 this.listener.streamCreated(this);
             }
         } catch (IOException ex) {
@@ -90,7 +96,8 @@ public class TCPStream extends Thread {
     }
 
     public void close() throws IOException {
-        if(this.socket != null) {
+
+        if (this.socket != null) {
             this.socket.close();
             //<<<<<<<<<<<<<<<<<<debug
             System.out.println("socket closed");
@@ -101,6 +108,7 @@ public class TCPStream extends Thread {
      * holds thread until a connection is established
      */
     public void waitForConnection(long time2wait) throws IOException {
+
         this.setWaitPeriod(time2wait);
         this.waitForConnection();
     }
@@ -109,7 +117,8 @@ public class TCPStream extends Thread {
      * holds thread until a connection is established
      */
     public void waitForConnection() throws IOException {
-        if(this.createThread == null) {
+
+        if (this.createThread == null) {
             /* in unit tests there is a race condition between the test
             thread and those newly created tests to establish a connection.
 
@@ -123,14 +132,13 @@ public class TCPStream extends Thread {
                 // ignore
             }
 
-            if(this.createThread == null) {
+            if (this.createThread == null) {
                 // that's probably wrong usage:
                 throw new IOException("must start TCPStream thread first by calling start()");
             }
         }
 
-
-        while(!this.fatalError && this.socket == null) {
+        while (!this.fatalError && this.socket == null) {
             try {
                 Thread.sleep(this.waitInMillis);
             } catch (InterruptedException ex) {
@@ -140,7 +148,8 @@ public class TCPStream extends Thread {
     }
 
     public void checkConnected() throws IOException {
-        if(this.socket == null) {
+
+        if (this.socket == null) {
             //<<<<<<<<<<<<<<<<<<debug
             String s = "no socket yet - should call connect first";
             System.out.println(s);
@@ -150,24 +159,29 @@ public class TCPStream extends Thread {
     }
 
     public InputStream getInputStream() throws IOException {
+
         this.checkConnected();
         return this.socket.getInputStream();
     }
 
     public OutputStream getOutputStream() throws IOException {
+
         this.checkConnected();
         return this.socket.getOutputStream();
     }
 
     public void setRemoteEngine(String remoteEngine) {
+
         this.remoteEngine = remoteEngine;
     }
 
     private class TCPServer {
+
         private ServerSocket srvSocket = null;
 
         Socket getSocket() throws IOException {
-            if(this.srvSocket == null) {
+
+            if (this.srvSocket == null) {
                 this.srvSocket = new ServerSocket(port);
             }
 
@@ -198,19 +212,23 @@ public class TCPStream extends Thread {
         }
 
         public void kill() throws IOException {
+
             this.srvSocket.close();
         }
     }
 
     private class TCPClient {
+
         private boolean killed = false;
 
         public void kill() {
+
             this.killed = true;
         }
 
         Socket getSocket() throws IOException {
-            while(!this.killed) {
+
+            while (!this.killed) {
                 try {
                     //<<<<<<<<<<<<<<<<<<debug
                     StringBuilder b = new StringBuilder();
@@ -224,8 +242,7 @@ public class TCPStream extends Thread {
                     //>>>>>>>>>>>>>>>>>>>debug
                     Socket socket = new Socket(TCPStream.this.remoteEngine, port);
                     return socket;
-                }
-                catch(IOException ioe) {
+                } catch (IOException ioe) {
                     //<<<<<<<<<<<<<<<<<<debug
                     StringBuilder b = new StringBuilder();
                     b.append(this.getClass().getSimpleName());

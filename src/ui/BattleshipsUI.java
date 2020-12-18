@@ -18,6 +18,8 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     private static final String EXIT_COMMAND = "leave the game";
     private static final String SET_COMMAND = "Set a ship";
     private static final String ATTACK_COMMAND = "Attack";
+    private static final String OWN_BOARD_COMMAND = "Show my Own Board";
+    private static final String OWN_BOARD = "X: your ships\n O: where u got attacked";
     private static final String ENTER_X = "enter x-coordinate";
     private static final String ENTER_Y = "enter y-coordinate";
     private static final String WAIT_FOR_OTHER_PLAYER_TO_CONNECT = "Opened a new game - wait until other player is connected";
@@ -30,6 +32,8 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
     private static final String WAIT_FOR_OTHER_PLAYER = "its not your turn. please wait";
     private static final String EXIT_MESSAGE = "Game closed";
     private static final String PLACEMENT_DONE = "You placed all your ships - wait a few secs until opponent has finished";
+    private static final String HIT = "great - you hit something";
+    private static final String MISS = "too bad - u missed";
     private final BattleshipsImpl gameEngine;
     BattleShipsLocalBoard localBoard;
     private final String playerName;
@@ -67,7 +71,30 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
         LinkedList<Command> list = new LinkedList<>();
         list.add(createExitCommand());
         list.add(createAttackCommand());
+        list.add(createOwnBoardCommand());
         return list;
+    }
+
+    private Command createOwnBoardCommand() {
+        return new Command() {
+            @Override
+            public String execute() {
+
+                try {
+                    printOwnBoard();
+                } catch (IOException e) {
+                    System.out.println(e.getLocalizedMessage());
+                }
+                return OWN_BOARD;
+            }
+
+            @Override
+            public String description() {
+
+                return OWN_BOARD_COMMAND;
+            }
+        };
+
     }
 
 
@@ -120,7 +147,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
                         return PLACEMENT_DONE;
                     }
                     doSet();
-                    doPrint();
+                    printOwnBoard();
                 } catch (StatusException | GameException | IOException e) {
                     System.out.println(e.getLocalizedMessage());
                 }
@@ -142,12 +169,19 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             @Override
             public String execute() {
 
+
                 try {
                     if(!localBoard.isActive()){
                         return WAIT_FOR_OTHER_PLAYER;
                     }
-                    doAttack();
-                } catch (StatusException | GameException e) {
+                    boolean result = doAttack();
+                    printEnemyBoard();
+                    if (result){
+                        return HIT;
+                    }else{
+                        return MISS;
+                    }
+                } catch (StatusException | GameException | IOException e) {
                     System.out.println(e.getLocalizedMessage());
                 }
                 return "\n";
@@ -159,6 +193,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
                 return ATTACK_COMMAND;
             }
         };
+
     }
 
     private Command createExitCommand() {
@@ -187,7 +222,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
     @Override
     public void changed() {
-
+//TODO
         try {
             this.doPrint();
         } catch (IOException e) {
@@ -196,11 +231,11 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
     }
 
-    public void doAttack() throws StatusException, GameException {
+    public boolean doAttack() throws StatusException, GameException {
 
         int x = Console.readInteger(ENTER_X);
         int y = Console.readInteger(ENTER_Y);
-        localBoard.attack(this.localBoard.getLocalRole(), x, y);
+        return localBoard.attack(this.localBoard.getLocalRole(), x, y);
 
     }
 
@@ -220,7 +255,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
 
     public void doPrint() throws IOException {
 
-        this.gameEngine.getPrintStreamView().print(System.out);
+
 
         if (this.gameEngine.getStatus() == Status.END) {
             if (this.gameEngine.hasWon()) {
@@ -234,6 +269,18 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             System.out.println(WAIT_FOR_OTHER_PLAYER);
         }
     }
+
+    public void printOwnBoard() throws IOException {
+
+        this.gameEngine.getPrintStreamView().printOwnBoard(System.out);
+
+    }
+    public void printEnemyBoard() throws IOException {
+
+        this.gameEngine.getPrintStreamView().printEnemyBoard(System.out);
+
+    }
+
 
 
 
