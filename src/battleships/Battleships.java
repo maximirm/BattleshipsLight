@@ -26,8 +26,7 @@ public interface Battleships {
      * @return AttackResult
      * @throws StatusException      if method is called in wrong GameStatus
      * @throws GameException        if wrong player wants to attack
-     * @throws NullPointerException if coordinates out of bounds
      */
-    boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException;
+    boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException;
 
 }

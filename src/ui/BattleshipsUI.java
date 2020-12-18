@@ -116,6 +116,7 @@ public class BattleshipsUI implements LocalBoardChangeListener, GameSessionEstab
             public String execute() {
 
                 try {
+                    //TODO check if player placed all ships
                     doSet();
                     doPrint();
                 } catch (StatusException | GameException | IOException e) {

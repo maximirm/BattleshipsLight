@@ -109,9 +109,9 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
 
 
     @Override
-    public boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException, NullPointerException {
+    public boolean attack(PlayerRole pR, int xCoord, int yCoord) throws StatusException, GameException {
 
-        int player = (pR == PlayerRole.FIRST) ? 1 : 0;
+        int defendingPlayer = (pR == PlayerRole.FIRST) ? 1 : 0;
 
         if (pR == localRole) {
             //check status
@@ -125,23 +125,24 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             //check coords
             checkCoords(xCoord, yCoord);
             //check attackedYet
-            if (this.board[player][xCoord][yCoord].isAttacked()) {
+            if (this.board[defendingPlayer][xCoord][yCoord].isAttacked()) {
                 throw new GameException(ALREADY_ATTACKED);
             }
             //check ship
-            if (this.board[player][xCoord][yCoord].isShip()) {
-                this.board[player][xCoord][yCoord].setAttacked(true);
-                playerHealth[player]--;
+            if (this.board[defendingPlayer][xCoord][yCoord].isShip()) {
+                this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
+                playerHealth[defendingPlayer]--;
             } else {
                 //no ship
+                this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
                 changeStatus();
-                System.out.println("5");
-                //TODO boardchange
+                this.notifyBoardChanged();
+                this.protocolEngine.attack(pR, xCoord, yCoord);
                 return false;
             }
 
             //check HP
-            if (playerHealth[player] == 0) {
+            if (playerHealth[defendingPlayer] == 0) {
                 switch (pR) {
                     case FIRST -> {
                         secondPlayerDead = true;
@@ -156,15 +157,16 @@ public class BattleshipsImpl implements Battleships, BattleShipsLocalBoard, Game
             this.protocolEngine.attack(pR, xCoord, yCoord);
 
             changeStatus();
-            //TODO boardchange
+            this.notifyBoardChanged();
 
         } else {
-            this.board[player][xCoord][yCoord].setAttacked(true);
+            this.board[defendingPlayer][xCoord][yCoord].setAttacked(true);
             changeStatus();
+            this.notifyBoardChanged();
 
         }
 
-        //TODO boardchange
+
         return true;
 
     }
